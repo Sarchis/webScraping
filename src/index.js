@@ -6,6 +6,7 @@ const path = require('path')
 
 // Setup server
 const app = express();
+require('./database.js')
 
 app.set("view options", {
     layout: false

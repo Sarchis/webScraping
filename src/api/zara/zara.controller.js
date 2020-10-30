@@ -2,17 +2,9 @@ const cheerio = require('cheerio')
 const axios = require('axios').default;
 const URL = process.env.URL_ZARA;
 const puppeteer = require('puppeteer');
+const zaraModel = require('./zara.model')
 
 
-
-const fethHtml = async (url) => {
-    try {
-        const { data } = await axios.get(url);
-        return data;
-    } catch {
-        console.error(`ERROR: An error occurred while trying to fetch the URL: ${url}`);
-    }
-};
 /*
 * Render página principal
 */
@@ -44,6 +36,7 @@ let indexPage = async (req, res, next) => {
     })
 }
 
+
 // Obtener categorías
 const cat = () => {
     return new Promise((resolve, reject) => {
@@ -68,6 +61,7 @@ const cat = () => {
             })
     })
 }
+
 
 // Obtener subcategorías
 const subCat = async () => {
@@ -101,90 +95,72 @@ const subCat = async () => {
 
 const getCategories = async (req, res) => {
 
-    // (async () => {
-    const browser = await puppeteer.launch({ headless: false });
-    const page = await browser.newPage();
+    // const browser = await puppeteer.launch({ headless: false });
+    // const page = await browser.newPage();
 
-    await page.goto("https://www.zara.com/co/es/mujer-vestidos-l1066.html?v1=1549249", { waitUntil: "networkidle0" });
+    // await page.goto("https://www.zara.com/co/es/mujer-vestidos-l1066.html?v1=1549249", { waitUntil: "networkidle0" });
 
-    const productList = await page.evaluate(async function infinityLoader() {
-        const delay = d => new Promise(r => setTimeout(r, d));
+    // const productList = await page.evaluate(async function infinityLoader() {
+    //     const delay = d => new Promise(r => setTimeout(r, d));
 
-        const scrollAndExtract = async (selector, leaf, remove) => {
-            const element = document.querySelector(selector);
-            if (element) {
-                element.scrollIntoView();
-                if (remove) return element.remove(); // <-- Remove and exit
-                return element[leaf];
-            }
-        };
+    //     const scrollAndExtract = async (selector, leaf, remove) => {
+    //         const element = document.querySelector(selector);
+    //         if (element) {
+    //             element.scrollIntoView();
+    //             if (remove) return element.remove(); // <-- Remove and exit
+    //             return element[leaf];
+    //         }
+    //     };
 
-        async function extractor() {
-            const title = await scrollAndExtract('.product-name', 'innerText')
-            const img = await scrollAndExtract('.product-media', "src");
+    //     async function extractor() {
+    //         const title = await scrollAndExtract('.product-name', 'innerText')
+    //         const img = await scrollAndExtract('.product-media', "src");
 
-            // remove the parent here
-            await scrollAndExtract("div._groups-wrap ul li", null, true);
-            return { title, img };
-        }
+    //         // remove the parent here
+    //         await scrollAndExtract("div._groups-wrap ul li", null, true);
+    //         return { title, img };
+    //     }
 
-        const products = [];
-        async function hundredProducts() {
-            if (products.length < 10) {
-                await delay(1000);
-                window.scrollTo(0, 0);
+    //     const products = [];
+    //     async function hundredProducts() {
+    //         if (products.length < 10) {
+    //             await delay(1000);
+    //             window.scrollTo(0, 0);
 
-                const data = await extractor();
-                // if (!data.img) return null;
-                if (!data.title || !data.img) return null;
+    //             const data = await extractor();
+    //             // if (!data.img) return null;
+    //             if (!data.title || !data.img) return null;
 
-                products.push(data);
-                return hundredProducts();
-            }
-        }
+    //             products.push(data);
+    //             return hundredProducts();
+    //         }
+    //     }
 
-        // run the function to grab data
-        await hundredProducts();
+    //     // run the function to grab data
+    //     await hundredProducts();
 
-        // and return the product from inside the page
-        return products;
-    });
+    //     // and return the product from inside the page
+    //     return products;
+    // });
 
-    console.log(productList);
-    console.log(productList.length);
+    // console.log(productList);
+    // console.log(productList.length);
 
-    await browser.close();
-    // })();
+    // await browser.close();
 
-    res.json({
-        productList
-    })
-
+    // res.json({
+    //     productList
+    // })
 }
 
-const extractProduct = ($) => {
-
-    const images = $
-        .find(".item")
-        .find(".product-grid-xmedia")
-        // .find("._imageLoaded")
-        // .attr("src")
-        .html()
-    console.log(images)
-
-    return {
-        images
-    }
-}
 
 const getPhotosByCategory = async (enlace) => {
-    console.log(`Vamos a coger las fotos del enlace ${enlace}`)
+    console.log(`Consultando imágenes de ${enlace}`)
 
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
     await page.goto(enlace, { waitUntil: "networkidle0" });
-    // await page.goto("https://www.zara.com/co/es/mujer-vestidos-l1066.html?v1=1549249", { waitUntil: "networkidle0" });
 
     const productList = await page.evaluate(async function infinityLoader() {
         const delay = d => new Promise(r => setTimeout(r, d));
@@ -199,38 +175,60 @@ const getPhotosByCategory = async (enlace) => {
         };
 
         async function extractor() {
+
+            // let labelNew = await scrollAndExtract('.product-info > .product-info-item.product-info-item-label > label _label  label-undefined undefined')
+            const label = await scrollAndExtract('.label._label.label-undefined.undefined', 'innerText')
+
+            // if(!labelNew || labelNew === undefined || labelNew === null) {
+            //     labelNew = 'No hay label'
+            // } else {
+            //     labelNew = label
+            // }
+
+            // const label = await scrollAndExtract('.label-undefined', 'innerText')
             const title = await scrollAndExtract('.product-name', 'innerText')
             const img = await scrollAndExtract('.product-media', "src");
 
             // remove the parent here
             await scrollAndExtract("div._groups-wrap ul li", null, true);
-            return { title, img };
+
+            return { label, title, img };
+            // return { labelNew };
         }
 
         const products = [];
-        async function hundredProducts() {
+        async function allProducts() {
             if (products.length < 10) {
-                await delay(1000);
+                await delay(500);
                 window.scrollTo(0, 0);
 
                 const data = await extractor();
                 // if (!data.img) return null;
-                if (!data.title || !data.img) return null;
+                // if (!data.label || !data.title || !data.img) return null;
 
                 products.push(data);
-                return hundredProducts();
+                return allProducts();
             }
         }
 
         // run the function to grab data
-        await hundredProducts();
+        await allProducts();
 
         // and return the product from inside the page
         return products;
     });
 
-    console.log(productList);
-    console.log(productList.length);
+    // console.log(productList);
+
+    productList.forEach(async function (item) {
+        console.log(item)
+        try {
+            const saveDataDB = new zaraModel(item);
+            await saveDataDB.save()
+        } catch (error) {
+            console.error("Error en almacenamiento: ", error)
+        }
+    })
 
     await browser.close();
 
