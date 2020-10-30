@@ -189,7 +189,7 @@ const getPhotosByCategory = async (enlace, categoria, subcategoria) => {
             } else {
                 label = await scrollAndExtract('.product-info-item-label', 'innerText');
             }
-            return { label, title, img }
+            return {label, title, img }
             
 
         }
@@ -201,7 +201,6 @@ const getPhotosByCategory = async (enlace, categoria, subcategoria) => {
                 window.scrollTo(0, 0);
 
                 const data = await extractor();
-                // if (!data.child) return null;
                 if (!data.label || !data.title || !data.img) return null;
 
                 products.push(data);
@@ -213,7 +212,7 @@ const getPhotosByCategory = async (enlace, categoria, subcategoria) => {
         return products;
     });
 
-    console.log(JSON.stringify(productList, null, 2));
+    console.log(productList);
 
     productList.forEach(async function (item) {
         try {
@@ -318,11 +317,12 @@ const subcategoria = async (req, res) => {
         console.log('nada para hacer')
     }
 
-    res.json({
-        status: 200,
-        msg: 'Ok'
-    })
-    // res.redirect('/api/main')
+    // res.json({
+    //     status: 200,
+    //     msg: 'Ok'
+    // })
+    res.redirect('/api/main')
+    // res.render('index.ejs')
 }
 
 
