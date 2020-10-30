@@ -1,55 +1,56 @@
-const cheerio = require('cheerio')
-const axios = require('axios').default;
+const puppeteer = require("puppeteer");
 
-// axios.get(url)
-//     .then((response) => {
-//         let $ = cheerio.load(response.data)
-//         $('a').each(function (i, e) {
-//             let links = $(e).attr('href');
-//             console.log(links)
-//         })
-//     })
-//     .catch(function (e) {
-//         console.log(e)
-//     })
+(async () => {
+    const browser = await puppeteer.launch({ headless: false });
+    const page = await browser.newPage();
 
-function getTitle($) {
-    const webSiteTitle = $('title');
-    console.log("Title: ", webSiteTitle.trim())
-}
+    await page.goto("https://www.zara.com/co/es/mujer-vestidos-l1066.html?v1=1549249", { waitUntil: "networkidle0" });
 
+    const productList = await page.evaluate(async function infinityLoader() {
+        const delay = d => new Promise(r => setTimeout(r, d));
 
-function getQuotes($) {
-    $('.quote').each(function (index, elem) {
-        let tags = []
-        // console.log(index, $(elem).html())
-        let text = $(elem).text();
-        let author = $(elem).find("span small.author").text();
-        
-        $(elem).find(".tags a").each((i, el) => {
-            tags.push($(el).text())
-        })
-        // tags.push(tag)
-        console.log(tags)
-    })
-}
+        const scrollAndExtract = async (selector, leaf, remove) => {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.scrollIntoView();
+                if (remove) return element.remove(); // <-- Remove and exit
+                return element[leaf];
+            }
+        };
 
-const init = async () => {
-    const URL = "https://quotes.toscrape.com/";
-    try {
-        axios.get(URL)
-            .then((response) => {
-                const $ = cheerio.load(response.data);
-                // $.html()
-                //    getTitle($)
-                getQuotes($)
-            })
-            .catch((err) => {
-                console.error(`Error, ${err}`)
-            })
-    } catch (error) {
-        console.error('Error')
-    }
-}
+        async function extractor() {
+            const title = await scrollAndExtract('.product-name', 'innerText') 
+            const img = await scrollAndExtract('.product-media', "src");
 
-init();
+            // remove the parent here
+            await scrollAndExtract("div._groups-wrap ul li", null, true);
+            return { title, img };
+        }
+
+        const products = [];
+        async function hundredProducts() {
+            if (products.length < 10) {
+                await delay(1000);
+                window.scrollTo(0, 0);
+
+                const data = await extractor();
+                // if (!data.img) return null;
+                if (!data.title || !data.img) return null;
+
+                products.push(data);
+                return hundredProducts();
+            }
+        }
+
+        // run the function to grab data
+        await hundredProducts();
+
+        // and return the product from inside the page
+        return products;
+    });
+
+    console.log(productList);
+    console.log(productList.length);
+
+    await browser.close();
+})();
