@@ -23,15 +23,15 @@
 
         <select name="subcategoriaM" id="subcategoriaMujer" style="display: none;">
             <option selected="true" disabled="disabled">Seleccione una categoría</option>
-            <% catM.subcategoria.forEach(function(item) { %>
-                    <option value="<%= item %>"><%= item %></option>
+            <% catM.subcategoria.forEach(function(itemM) { %>
+                    <option value="<%= itemM %>"><%= itemM %></option>
             <% }); %>
         </select>
 
         <select name="subcategoriaH" id="subcategoriaHombre" style="display: none;">
             <option selected="true" disabled="disabled">Seleccione una categoría</option>
-            <% catH.subcategoria.forEach(function(item) { %>
-                    <option value="<%= item %>"><%= item %></option>
+            <% catH.subcategoria.forEach(function(itemH) { %>
+                    <option value="<%= itemH %>"><%= itemH %></option>
             <% }); %>
         </select>
 

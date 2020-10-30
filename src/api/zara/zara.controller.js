@@ -154,8 +154,8 @@ const getCategories = async (req, res) => {
 }
 
 
-const getPhotosByCategory = async (enlace) => {
-    console.log(`Consultando imágenes de ${enlace}`)
+const getPhotosByCategory = async (enlace, categoria, subcategoria) => {
+    console.log(`Consultando imágenes de ${enlace} , ${categoria}, ${subcategoria}`)
 
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
@@ -175,25 +175,23 @@ const getPhotosByCategory = async (enlace) => {
         };
 
         async function extractor() {
+            var label;
+            var labelAll = await scrollAndExtract('.product-info', 'children');
 
-            // let labelNew = await scrollAndExtract('.product-info > .product-info-item.product-info-item-label > label _label  label-undefined undefined')
-            const label = await scrollAndExtract('.label._label.label-undefined.undefined', 'innerText')
-
-            // if(!labelNew || labelNew === undefined || labelNew === null) {
-            //     labelNew = 'No hay label'
-            // } else {
-            //     labelNew = label
-            // }
-
-            // const label = await scrollAndExtract('.label-undefined', 'innerText')
-            const title = await scrollAndExtract('.product-name', 'innerText')
+            const title = await scrollAndExtract('.product-name', 'innerText');
             const img = await scrollAndExtract('.product-media', "src");
 
             // remove the parent here
             await scrollAndExtract("div._groups-wrap ul li", null, true);
 
-            return { label, title, img };
-            // return { labelNew };
+            if (labelAll.length < 3) {
+                label = 'No label'
+            } else {
+                label = await scrollAndExtract('.product-info-item-label', 'innerText');
+            }
+            return { label, title, img }
+            
+
         }
 
         const products = [];
@@ -203,25 +201,21 @@ const getPhotosByCategory = async (enlace) => {
                 window.scrollTo(0, 0);
 
                 const data = await extractor();
-                // if (!data.img) return null;
-                // if (!data.label || !data.title || !data.img) return null;
+                // if (!data.child) return null;
+                if (!data.label || !data.title || !data.img) return null;
 
                 products.push(data);
                 return allProducts();
             }
         }
-
-        // run the function to grab data
         await allProducts();
 
-        // and return the product from inside the page
         return products;
     });
 
-    // console.log(productList);
+    console.log(JSON.stringify(productList, null, 2));
 
     productList.forEach(async function (item) {
-        console.log(item)
         try {
             const saveDataDB = new zaraModel(item);
             await saveDataDB.save()
@@ -245,7 +239,7 @@ const categoria = (req, res) => {
 
 
 const subcategoria = async (req, res) => {
-    console.log(req.body);
+    console.log("Datos desde la web: ", req.body);
 
     let subcategorias = await subCat();
 
@@ -299,21 +293,25 @@ const subcategoria = async (req, res) => {
 
     if (req.body.categoria === 'HOMBRE') {
         const filtroH = listaDataHombres.filter((categoriaHombre) => {
-            return categoriaHombre.categoria === req.body.subcategoriaH
+            return categoriaHombre.categoria === req.body.subcategoriaH;
         });
         // console.log("Resultado filtro:", filtroH)
         let enlace = filtroH[0].enlace;
+        let subcategoria = filtroH[0].categoria;
+        let categoria = req.body.categoria;
 
-        getPhotosByCategory(enlace)
+        getPhotosByCategory(enlace, categoria, subcategoria)
 
     } else if (req.body.categoria === 'MUJER') {
 
         const filtroM = listaDataMujer.filter((categoriaMujer) => {
-            return categoriaMujer.categoria === req.body.subcategoriaM
+            return categoriaMujer.categoria === req.body.subcategoriaM;
         });
 
-        let enlace = filtroM[0].enlace
-        getPhotosByCategory(enlace)
+        let enlace = filtroM[0].enlace;
+        let subcategoria = filtroM[0].categoria;
+        let categoria = req.body.categoria;
+        getPhotosByCategory(enlace, categoria, subcategoria)
 
         // console.log("Resultado filtro Mujeres:", filtroM)
     } else {
