@@ -5,43 +5,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scraping Zara</title>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous">
+    </script>
     <script src="/js/script.js"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.4.1/materia/bootstrap.min.css">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
-    <header>
-        <h1>web scraping Zara</h1>
-    </header>
+    <nav class="navbar navbar-expand-lg navbar-main">
+        <a class="navbar-brand" href="/api/main">web scraping</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse lista-nav" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/api/viewImages">Resultados <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
     <section class="formulario">
         <h3>Seleccione una categoría</h3>
-        <form action="/api/subcategoria" method="POST">
-            <select name="categoria" id="categoria1" onchange="getSelectValue();">
-                <option selected="selected" value="">Seleccione una categoría</option>
-                <% categorias.forEach(function(item) { %>
-                <option value="<%= item %>"><%= item %></option>
-                <% }); %>
-            </select>
 
-            <select name="subcategoriaM" id="subcategoriaMujer" style="display: none;">
-                <option selected="true" disabled="disabled">Seleccione una categoría</option>
-                <% catM.subcategoria.forEach(function(itemM) { %>
-                <option value="<%= itemM %>"><%= itemM %></option>
-                <% }); %>
-            </select>
+        <div class="contenedor">
 
-            <select name="subcategoriaH" id="subcategoriaHombre" style="display: none;">
-                <option selected="true" disabled="disabled">Seleccione una categoría</option>
-                <% catH.subcategoria.forEach(function(itemH) { %>
-                <option value="<%= itemH %>"><%= itemH %></option>
-                <% }); %>
-            </select>
+            <form action="/api/subcategoria" method="POST">
 
-            <button id="submit" type="submit" disabled>Enviar</button>
+                <div class="form-group">
+                    <select name="categoria" class="form-control" id="categoria1" onchange="getSelectValue();">
+                        <option selected="selected" value="">Seleccione una categoría</option>
+                        <% categorias.forEach(function(item) { %>
+                        <option value="<%= item %>"><%= item %></option>
+                        <% }); %>
+                    </select>
+                </div>
 
-        </form>
+                <div class="form-group">
+                    <select name="subcategoriaM" class="form-control" id="subcategoriaMujer" style="display: none;">
+                        <option selected="true" disabled="disabled">Seleccione una categoría</option>
+                        <% catM.subcategoria.forEach(function(itemM) { %>
+                        <option value="<%= itemM %>"><%= itemM %></option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <select name="subcategoriaH" class="form-control" id="subcategoriaHombre" style="display: none;">
+                        <option selected="true" disabled="disabled">Seleccione una categoría</option>
+                        <% catH.subcategoria.forEach(function(itemH) { %>
+                        <option value="<%= itemH %>"><%= itemH %></option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <button id="submit" class="btn btn-primary" type="submit" disabled>Enviar</button>
+
+            </form>
+        </div>
     </section>
+
 </body>
 
 </html>

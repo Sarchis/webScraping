@@ -142,7 +142,7 @@ const getPhotosByCategory = async (enlace, categoria, subcategoria) => {
 
         const products = [];
         async function allProducts() {
-            if (products.length < 15) {
+            if (products.length < 10) {
                 await delay(500);
                 window.scrollTo(0, 0);
 
@@ -170,7 +170,6 @@ const getPhotosByCategory = async (enlace, categoria, subcategoria) => {
     })
 
     await browser.close();
-
 }
 
 const categoria = (req, res) => {
@@ -262,13 +261,29 @@ const subcategoria = async (req, res) => {
     } else {
         console.log('nada para hacer')
     }
-    res.redirect('/api/main')
+
+    setTimeout(() => {
+        res.redirect('/api/viewImages')
+    }, 15000)
+
 }
 
+const resultsImages = async (req, res) => {
+
+    try {
+        const images = await zaraModel.find()
+        console.log(images);
+        res.render('results.ejs', { images })
+    } catch (err) {
+        console.log(`Ha ocurrido un error consultado la base de datos ${err}`);
+    }
+
+}
 
 module.exports = {
     indexPage,
     getCategories,
     categoria,
-    subcategoria
+    subcategoria,
+    resultsImages
 }
